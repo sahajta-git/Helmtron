@@ -5,342 +5,237 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Helmtron – Smart Safety Helmet</title>
   <style>
-    /* ========== GLOBAL VARIABLES ========== */
-    :root {
-      --bg1: #08111d;
-      --bg2: #12263e;
-      --card: #1b2f4b;
-      --accent: #f1c40f;
-      --danger: #ff0033;
-      --title-red: #f44336;
-      --text-light: #dcdcdc;
-      --white: #ffffff;
+    :root{
+      --bg1:#08111d; --bg2:#12263e; --card:#1b2f4b; --accent:#f1c40f;
+      --danger:#ff0033; --title-red:#f44336; --text-light:#dcdcdc; --white:#ffffff;
+      --safe-green:#28a745;
     }
+    html{scroll-behavior:smooth}
+    body{margin:0;font-family:Inter, Poppins, Arial, sans-serif;background:linear-gradient(145deg,var(--bg1),var(--bg2));color:var(--accent);}
 
-    /* ========== BASIC LAYOUT ========== */
-    html {
-      scroll-behavior: smooth;
+    /* NAV */
+    nav{position:fixed;top:0;left:0;width:100%;background:rgba(11,26,43,0.95);border-bottom:2px solid var(--accent);display:flex;justify-content:space-between;align-items:center;padding:10px 28px;z-index:120}
+    nav h1{font-size:1.25rem;color:var(--title-red);margin:0}
+    nav ul{display:flex;gap:18px;list-style:none;margin:0;padding:0}
+    nav a{color:var(--accent);text-decoration:none;font-weight:500}
+    nav a:hover{color:var(--white)}
+
+    /* HERO */
+    #hero{
+      height:80vh; display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+      color:var(--white);
+      /* reliable image on Unsplash + gradient fallback */
+      background:
+        linear-gradient(rgba(3,12,22,0.55), rgba(3,12,22,0.55)),
+        url('https://images.unsplash.com/photo-1605902711622-cfb43c44367e?auto=format&fit=crop&w=1950&q=80') center/cover no-repeat;
     }
+    #hero h1{font-size:3rem;margin:0 12px;text-shadow:0 0 20px var(--accent)}
+    #hero p{max-width:760px;margin:12px auto 0;line-height:1.5}
 
-    body {
-      margin: 0;
-      font-family: "Poppins", Arial, sans-serif;
-      background: linear-gradient(145deg, var(--bg1), var(--bg2));
-      color: var(--accent);
-      overflow-x: hidden;
-    }
+    .btn{background:var(--accent);color:#000;padding:12px 20px;border-radius:8px;border:none;font-weight:700;margin-top:18px;cursor:pointer}
+    .btn:hover{transform:scale(1.03)}
 
-    h1, h2, h3 {
-      margin: 0;
-      letter-spacing: 1px;
-    }
+    /* SECTIONS */
+    section{padding:72px 18px}
+    #about{background:var(--card);color:var(--text-light);border-top:2px solid var(--accent);border-bottom:2px solid var(--accent)}
 
-    section {
-      padding: 80px 20px;
-      text-align: center;
-    }
+    /* FEATURES */
+    #features{display:flex;flex-wrap:wrap;gap:20px;justify-content:center}
+    .feature{width:240px;background:var(--card);padding:18px;border-radius:12px;border:2px solid var(--accent);box-shadow:0 6px 18px rgba(0,0,0,0.45);}
 
-    /* ========== NAVBAR ========== */
-    nav {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      background: rgba(11, 26, 43, 0.95);
-      border-bottom: 2px solid var(--accent);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px 40px;
-      box-sizing: border-box;
-      z-index: 100;
-    }
+    /* SENSOR */
+    #sensor{background:transparent;text-align:center}
+    #sensor .container{max-width:880px;margin:0 auto}
+    iframe{width:100%;height:340px;border:0;border-radius:12px;margin-top:14px;background:transparent}
+    #alert-box{display:none;margin:14px auto 8px;padding:12px;border-radius:10px;color:#fff;font-weight:700;background:linear-gradient(90deg,var(--danger),#ff5a5a);animation:blink 1s infinite alternate}
+    @keyframes blink{from{opacity:1}to{opacity:.7}}
 
-    nav h1 {
-      font-size: 1.5rem;
-      color: var(--title-red);
-      text-shadow: 0 0 8px var(--title-red);
-    }
+    /* readout */
+    #readout{display:flex;gap:14px;align-items:center;justify-content:center;margin-top:12px;flex-wrap:wrap}
+    .readout-card{background:var(--card);color:var(--text-light);padding:12px 16px;border-radius:10px;border:2px solid rgba(241,196,15,0.06);min-width:180px}
+    .status-safe{color:var(--safe-green);font-weight:800}
+    .status-danger{color:var(--danger);font-weight:900}
 
-    nav ul {
-      list-style: none;
-      display: flex;
-      gap: 25px;
-      margin: 0;
-      padding: 0;
-    }
+    /* CONTACT / FOOTER */
+    #contact{background:var(--card);border-top:2px solid var(--accent);padding-bottom:72px}
+    form{max-width:480px;margin:14px auto;display:flex;flex-direction:column;gap:10px}
+    input,textarea{padding:10px;border-radius:8px;border:1px solid #ccc;background:#fff;outline:none}
+    input:focus,textarea:focus{border-color:var(--accent)}
+    footer{padding:12px;text-align:center;border-top:2px solid var(--accent);background:rgba(11,26,43,0.9);color:var(--accent)}
 
-    nav ul li a {
-      text-decoration: none;
-      color: var(--accent);
-      font-weight: 500;
-      transition: color 0.3s;
-    }
-
-    nav ul li a:hover {
-      color: var(--white);
-    }
-
-    /* ========== HERO SECTION ========== */
-    #hero {
-      background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.6)), url('https://i.imgur.com/Jnt8nRj.jpg') center/cover;
-      color: var(--white);
-      height: 90vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-    }
-
-    #hero h1 {
-      font-size: 3rem;
-      margin-bottom: 15px;
-      text-shadow: 0 0 20px var(--accent);
-    }
-
-    #hero p {
-      font-size: 1.2rem;
-      max-width: 600px;
-    }
-
-    .btn {
-      background: var(--accent);
-      color: #000;
-      padding: 12px 28px;
-      border-radius: 8px;
-      border: none;
-      font-weight: 600;
-      margin-top: 20px;
-      cursor: pointer;
-      transition: 0.3s;
-    }
-
-    .btn:hover {
-      transform: scale(1.05);
-      background: #ffdb4d;
-    }
-
-    /* ========== ABOUT SECTION ========== */
-    #about {
-      background-color: var(--card);
-      color: var(--text-light);
-      border-top: 2px solid var(--accent);
-      border-bottom: 2px solid var(--accent);
-    }
-
-    #about h2 {
-      color: var(--accent);
-      margin-bottom: 20px;
-    }
-
-    #about p {
-      max-width: 700px;
-      margin: auto;
-      line-height: 1.6;
-    }
-
-    /* ========== FEATURES SECTION ========== */
-    #features {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 25px;
-    }
-
-    .feature {
-      background: var(--card);
-      width: 250px;
-      padding: 25px;
-      border-radius: 15px;
-      border: 2px solid var(--accent);
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
-      transition: transform 0.3s ease;
-    }
-
-    .feature:hover {
-      transform: translateY(-6px);
-    }
-
-    .feature h3 {
-      color: var(--accent);
-      margin-bottom: 10px;
-    }
-
-    /* ========== SENSOR SECTION ========== */
-    #sensor iframe {
-      width: 90%;
-      max-width: 700px;
-      height: 350px;
-      border: none;
-      border-radius: 12px;
-    }
-
-    #alert-box {
-      display: none;
-      background: var(--danger);
-      color: #fff;
-      font-weight: bold;
-      text-align: center;
-      padding: 15px;
-      width: 90%;
-      margin: 0 auto 20px;
-      border-radius: 10px;
-      animation: blink 1s infinite alternate;
-    }
-
-    @keyframes blink {
-      from { opacity: 1; }
-      to { opacity: 0.6; }
-    }
-
-    /* ========== CONTACT SECTION ========== */
-    #contact {
-      background-color: var(--card);
-      border-top: 2px solid var(--accent);
-    }
-
-    form {
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-      max-width: 400px;
-      margin: 20px auto;
-    }
-
-    input, textarea {
-      padding: 10px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      outline: none;
-      resize: none;
-      font-family: inherit;
-    }
-
-    input:focus, textarea:focus {
-      border-color: var(--accent);
-    }
-
-    /* ========== FOOTER ========== */
-    footer {
-      background-color: #0b1a2b;
-      border-top: 2px solid var(--accent);
-      color: var(--accent);
-      text-align: center;
-      padding: 15px;
-    }
-
-    footer a {
-      color: var(--accent);
-      text-decoration: none;
-      margin: 0 10px;
-    }
-
-    /* ========== RESPONSIVE ========== */
-    @media (max-width: 600px) {
-      nav { flex-direction: column; }
-      nav ul { flex-wrap: wrap; justify-content: center; }
-      #hero h1 { font-size: 2rem; }
-      #features { flex-direction: column; align-items: center; }
+    /* small screens */
+    @media (max-width:650px){
+      #hero h1{font-size:2rem}
+      nav{padding:8px 16px}
+      .feature{width:100%}
     }
   </style>
 </head>
 <body>
-
-  <!-- NAVBAR -->
   <nav>
     <h1>Helmtron</h1>
     <ul>
       <li><a href="#hero">Home</a></li>
       <li><a href="#about">About</a></li>
       <li><a href="#features">Features</a></li>
-      <li><a href="#sensor">Sensors</a></li>
+      <li><a href="#sensor">Sensor</a></li>
       <li><a href="#contact">Contact</a></li>
     </ul>
   </nav>
 
-  <!-- HERO SECTION -->
-  <section id="hero">
+  <section id="hero" style="padding-top:72px">
     <h1>Smart Safety Helmet</h1>
-    <p>Helmtron is an intelligent helmet that detects hazardous gases, impacts, and unsafe conditions — alerting users instantly.</p>
-    <a href="#about"><button class="btn">Learn More</button></a>
+    <p>Helmtron detects hazardous gases, impacts and unsafe conditions. Alerts the wearer and supervision systems in real time so incidents are prevented or responded to quickly.</p>
+    <a href="#sensor"><button class="btn">View Live Sensor</button></a>
   </section>
 
-  <!-- ABOUT SECTION -->
   <section id="about">
-    <h2>About Helmtron</h2>
-    <p>
-      Helmtron combines IoT sensors and AI to enhance worker safety in industries and construction sites. 
-      It continuously monitors air quality, detects accidents, and alerts both the wearer and remote supervisors in real-time. 
-      This proactive system minimizes risks and ensures faster emergency response.
-    </p>
+    <h2 style="color:var(--accent)">About Helmtron</h2>
+    <p>Helmtron combines IoT sensors (MQ-135, impact sensors, MPU6050 etc.) with cloud alerts to provide real-time safety monitoring for industrial and construction environments.</p>
   </section>
 
-  <!-- FEATURES SECTION -->
   <section id="features">
-    <div class="feature">
-      <h3>⚙ Smart Sensors</h3>
-      <p>Real-time monitoring of air quality, temperature, and impact levels using IoT sensors.</p>
-    </div>
-    <div class="feature">
-      <h3>📡 Wireless Alerts</h3>
-      <p>Immediate alerts via cloud dashboard and buzzer notification during unsafe conditions.</p>
-    </div>
-    <div class="feature">
-      <h3>🧠 AI Analysis</h3>
-      <p>AI algorithms predict risk zones and help prevent incidents before they occur.</p>
-    </div>
-    <div class="feature">
-      <h3>🔋 Long Battery</h3>
-      <p>Optimized power usage for extended field operation without frequent charging.</p>
-    </div>
+    <div class="feature"><h3 style="color:var(--accent)">Real-time Monitoring</h3><p>Continuous data from air quality and impact sensors.</p></div>
+    <div class="feature"><h3 style="color:var(--accent)">Immediate Alerts</h3><p>Buzzer and cloud notifications for hazardous readings.</p></div>
+    <div class="feature"><h3 style="color:var(--accent)">Data Dashboard</h3><p>Live charts and historical logs for supervisors.</p></div>
+    <div class="feature"><h3 style="color:var(--accent)">Low Power</h3><p>Optimized battery management for long shifts.</p></div>
   </section>
 
   <!-- SENSOR SECTION -->
   <section id="sensor">
-    <h2>Live Sensor Data</h2>
-    <div id="alert-box">⚠ DANGER DETECTED — Unsafe levels!</div>
-    <iframe src="https://thingspeak.com/channels/3069778/charts/1?bgcolor=%230b1a2b&color=%23f1c40f&dynamic=true"></iframe>
-    <p style="margin-top:10px;">Monitoring Air Quality in Real Time (via MQ135 Sensor)</p>
+    <div class="container">
+      <h2 style="color:var(--accent)">Live Sensor Data (MQ135)</h2>
+
+      <!-- visible alert box -->
+      <div id="alert-box" role="alert" aria-live="assertive">⚠ DANGER — Unsafe levels detected!</div>
+
+      <!-- iframe chart (ThingSpeak) -->
+      <iframe id="chart-iframe" title="ThingSpeak Chart"
+        src="https://thingspeak.com/channels/3138290/charts/1?bgcolor=%230b1a2b&color=%23f1c40f&dynamic=true"></iframe>
+
+      <!-- readouts -->
+      <div id="readout" aria-live="polite" style="margin-top:14px">
+        <div class="readout-card">Latest value: <span id="sensor-value">--</span></div>
+        <div class="readout-card">Status: <span id="sensor-status">--</span></div>
+        <div class="readout-card">Timestamp: <span id="sensor-time">--</span></div>
+      </div>
+
+      <!-- small error / info line -->
+      <p id="sensor-error" style="color:#ffcccb;margin-top:8px;display:none"></p>
+    </div>
   </section>
 
-  <!-- CONTACT SECTION -->
   <section id="contact">
-    <h2>Contact Us</h2>
-    <form onsubmit="alert('Thank you for contacting Helmtron!'); return false;">
-      <input type="text" placeholder="Your Name" required />
-      <input type="email" placeholder="Your Email" required />
-      <textarea rows="4" placeholder="Your Message" required></textarea>
-      <button type="submit" class="btn">Send Message</button>
+    <h2 style="color:var(--accent)">Contact</h2>
+    <form onsubmit="alert('Thanks — message received!'); return false;">
+      <input placeholder="Your name" required />
+      <input type="email" placeholder="Email" required />
+      <textarea rows="4" placeholder="Message" required></textarea>
+      <button class="btn" type="submit">Send</button>
     </form>
   </section>
 
-  <!-- FOOTER -->
-  <footer>
-    © 2025 Helmtron | Created by Sahajta – NIIT University <br />
-    <a href="#">LinkedIn</a> | <a href="#">GitHub</a> | <a href="#">Twitter</a>
-  </footer>
+  <footer>© 2025 Helmtron — Created by Sahajta | NIIT University</footer>
 
-  <!-- SENSOR SIMULATION SCRIPT -->
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      const alertBox = document.getElementById('alert-box');
+      // CONFIG: change as needed
+      const CHANNEL_ID = '3138290'; // Thingspeak channel id
+      const FIELD = 1;               // field number (1 = field1)
+      const DANGER_THRESHOLD = 300;  // numeric threshold above which it's harmful
+      const POLL_INTERVAL_MS = 8000; // fetch interval
 
-      function simulateSensor() {
-        const value = Math.floor(Math.random() * 500);
-        if (value > 300) {
-          alertBox.style.display = 'block';
-        } else {
-          alertBox.style.display = 'none';
+      // DOM
+      const alertBox = document.getElementById('alert-box');
+      const valueEl = document.getElementById('sensor-value');
+      const timeEl = document.getElementById('sensor-time');
+      const statusEl = document.getElementById('sensor-status');
+      const errEl = document.getElementById('sensor-error');
+
+      // Utility: format timestamp from ThingSpeak to readable local string
+      function formatTS(ts) {
+        try {
+          const d = new Date(ts + 'Z'); // ThingSpeak returns UTC without Z sometimes, ensure it's parsed as UTC
+          return d.toLocaleString();    // will show in your local timezone
+        } catch (e) {
+          return ts;
         }
       }
 
-      setInterval(simulateSensor, 3000);
+      // Update UI with a numeric value and timestamp
+      function updateUI(value, timestamp) {
+        const n = Number(value);
+        valueEl.textContent = isNaN(n) ? '--' : n.toFixed(0);
+        timeEl.textContent = timestamp ? formatTS(timestamp) : '--';
+
+        if (!isNaN(n) && n !== null) {
+          if (n > DANGER_THRESHOLD) {
+            alertBox.style.display = 'block';
+            statusEl.innerHTML = '<span class="status-danger">HARMFUL</span>';
+          } else {
+            alertBox.style.display = 'none';
+            statusEl.innerHTML = '<span class="status-safe">SAFE</span>';
+          }
+        } else {
+          alertBox.style.display = 'none';
+          statusEl.textContent = '--';
+        }
+      }
+
+      // Fetch latest value from ThingSpeak JSON API
+      async function fetchThingSpeakLatest() {
+        const API_URL = https://api.thingspeak.com/channels/${CHANNEL_ID}/fields/${FIELD}.json?results=1;
+        try {
+          const resp = await fetch(API_URL, {cache: "no-store"});
+          if (!resp.ok) throw new Error('Network response not ok: ' + resp.status);
+          const data = await resp.json();
+
+          // guard structure: data.feeds[0].field1 and data.feeds[0].created_at
+          const feed = data && data.feeds && data.feeds[0] ? data.feeds[0] : null;
+          if (!feed) throw new Error('No feed data returned');
+
+          const latestVal = feed['field' + FIELD];
+          const createdAt = feed['created_at']; // ISO-ish string UTC
+
+          // clear any previous error
+          errEl.style.display = 'none';
+          updateUI(latestVal, createdAt);
+          return true;
+        } catch (err) {
+          // show short error message and return false so caller can fallback to simulation
+          console.warn('ThingSpeak fetch failed:', err);
+          errEl.textContent = 'Live fetch failed — showing simulated values. (Check network/CORS or channel ID.)';
+          errEl.style.display = 'block';
+          return false;
+        }
+      }
+
+      // Simulation fallback (only used when fetch fails)
+      function simulateValue() {
+        const v = Math.floor(Math.random() * 500);
+        const ts = new Date().toISOString();
+        updateUI(v, ts);
+      }
+
+      // Main poller: try to fetch, if fail -> simulate but keep trying to fetch each poll
+      async function pollOnce() {
+        const ok = await fetchThingSpeakLatest();
+        if (!ok) {
+          // show simulated value so UI stays alive
+          simulateValue();
+        }
+      }
+
+      // initial call and interval
+      pollOnce();
+      setInterval(pollOnce, POLL_INTERVAL_MS);
+
+      // Safety: if user wants to manually force refresh, allow clicking chart to refresh quickly
+      document.getElementById('chart-iframe').addEventListener('load', () => {
+        // iframe loaded; we still use API fetch for numeric values.
+      });
     });
   </script>
 </body>
 </html>
-
-
-sahi hai?
 
