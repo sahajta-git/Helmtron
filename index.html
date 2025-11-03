@@ -1,178 +1,157 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Helmtron - Smart Helmet Dashboard</title>
-
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background-color: #0b1a2b;
-      color: #f1c40f;
-    }
-
-    header {
-      padding: 15px;
-      background: #0b1a2b;
-      border-bottom: 3px solid #f1c40f;
-      text-align: center;
-      font-size: 28px;
-      font-weight: bold;
-    }
-
-    .hero {
-      background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.7)),
-        url("https://i.postimg.cc/Pf4v5Fkt/helmet-bg.jpg");
-      height: 300px;
-      background-size: cover;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-      color: white;
-    }
-
-    .hero h2 {
-      font-size: 35px;
-      margin: 0;
-      font-weight: bold;
-    }
-
-    .hero button {
-      margin-top: 12px;
-      background: #f1c40f;
-      border: none;
-      padding: 10px 18px;
-      font-size: 18px;
-      cursor: pointer;
-      border-radius: 6px;
-      font-weight: bold;
-    }
-
-    .section {
-      padding: 25px;
-      text-align: center;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 20px;
-      padding: 20px;
-      max-width: 1200px;
-      margin: auto;
-    }
-
-    .card {
-      background: #1b2f4b;
-      border: 2px solid #f1c40f;
-      border-radius: 12px;
-      padding: 20px;
-      font-size: 18px;
-    }
-
-    .danger {
-      background: red;
-      color: white;
-      font-weight: bold;
-      padding: 12px;
-      border-radius: 6px;
-      margin-bottom: 15px;
-      animation: blink 1s infinite;
-    }
-
-    @keyframes blink {
-      50% { opacity: 0.5; }
-    }
-
-    footer {
-      background: #0b1a2b;
-      border-top: 2px solid #f1c40f;
-      text-align: center;
-      padding: 15px;
-      font-size: 14px;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>Helmtron Safety Helmet</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body {
+  font-family: Arial, sans-serif;
+  margin:0; padding:0;
+  background:#f8f9fa;
+}
+.navbar {
+  display:flex; justify-content:space-between;
+  background:#111; padding:14px; color:#fff;
+}
+.navbar a {
+  color:white; text-decoration:none; margin:0 10px;
+  font-weight:bold;
+}
+.hero {
+  background:#111; color:white;
+  padding:80px 20px; text-align:center;
+}
+.btn {
+  background:#ffc107; padding:10px 18px;
+  border:none; border-radius:5px;
+  font-weight:bold; cursor:pointer;
+}
+.section { padding:40px 20px; }
+.card-container {
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(220px,1fr));
+  gap:15px;
+}
+.card {
+  background:white; padding:20px;
+  border-radius:8px;
+  box-shadow:0 2px 8px rgba(0,0,0,0.1);
+  text-align:center;
+}
+.safe { color:green; font-weight:bold; }
+.danger { color:red; font-weight:bold; }
+.history-frame {
+  width:100%; height:350px; border:0;
+  margin-bottom:15px;
+}
+</style>
 </head>
-
 <body>
-<header>Helmtron - Smart Safety Helmet</header>
 
-<div class="hero">
-  <h2>Live Safety Monitoring</h2>
-  <p>Gas | Heart Rate | Temperature | Impact Alerts</p>
-  <button onclick="scrollToSensors()">View Live Data</button>
-</div>
-
-<div class="section" id="sensorSection">
-  <h2>Live Sensor Data</h2>
-  <div id="alertBox"></div>
-
-  <div class="grid" id="sensorGrid">
-    <!-- Cards load via JS -->
+<!-- Navbar -->
+<div class="navbar">
+  <div>HELMTRON</div>
+  <div>
+    <a href="#home">Home</a>
+    <a href="#live">Live Data</a>
+    <a href="#history">Sensor History</a>
+    <a href="#about">About</a>
   </div>
 </div>
 
-<footer>© 2025 Helmtron | NIIT University | Smart Safety System</footer>
+<!-- Hero -->
+<div class="hero" id="home">
+  <h1>Smart Safety Helmet</h1>
+  <p>Real-time monitoring for worker safety</p>
+  <button class="btn" onclick="document.getElementById('live').scrollIntoView()">View Live Data</button>
+</div>
+
+<!-- Live Sensors -->
+<div class="section" id="live">
+  <h2>Live Sensor Data</h2>
+
+  <input id="channel" placeholder="Enter ThingSpeak Channel ID" style="padding:8px" />
+  <button class="btn" onclick="fetchData()">Fetch</button>
+
+  <div id="sensorData" class="card-container" style="margin-top:20px;"></div>
+
+  <p id="status"></p>
+</div>
+
+<!-- Sensor History -->
+<div class="section" id="history">
+  <h2>Sensor History</h2>
+
+  <!-- Replace channel number in URLs below -->
+  <iframe class="history-frame" src="https://thingspeak.com/channels/3138290/charts/1?bgcolor=%23fff&color=%23000&dynamic=true&results=60&title=MQ135&type=line"></iframe>
+  <iframe class="history-frame" src="https://thingspeak.com/channels/3138290/charts/2?bgcolor=%23fff&color=%23000&dynamic=true&results=60&title=MQ5&type=line"></iframe>
+  <iframe class="history-frame" src="https://thingspeak.com/channels/3138290/charts/3?bgcolor=%23fff&color=%23000&dynamic=true&results=60&title=Heart Rate&type=line"></iframe>
+  <iframe class="history-frame" src="https://thingspeak.com/channels/3138290/charts/4?bgcolor=%23fff&color=%23000&dynamic=true&results=60&title=SpO2&type=line"></iframe>
+  <iframe class="history-frame" src="https://thingspeak.com/channels/3138290/charts/5?bgcolor=%23fff&color=%23000&dynamic=true&results=60&title=Temperature&type=line"></iframe>
+  <iframe class="history-frame" src="https://thingspeak.com/channels/3138290/charts/6?bgcolor=%23fff&color=%23000&dynamic=true&results=60&title=Humidity&type=line"></iframe>
+  <iframe class="history-frame" src="https://thingspeak.com/channels/3138290/charts/7?bgcolor=%23fff&color=%23000&dynamic=true&results=60&title=Impact&type=line"></iframe>
+</div>
+
+<!-- About -->
+<div class="section" id="about">
+  <h2>About Helmtron</h2>
+  <p>Helmet equipped with MQ135, MQ5, MAX30102, DHT11, MPU6050 for worker protection.</p>
+</div>
 
 <script>
-const channelId = 3138290; // ✅ Your channel
-const apiUrl = `https://api.thingspeak.com/channels/${channelId}/feeds.json?results=1`;
-
-const sensors = {
-  mq135: { label: "MQ135 Air Quality", field: "field1", unit: "PPM", limit: 300 },
-  mq5: { label: "MQ5 Gas Level", field: "field2", unit: "PPM", limit: 200 },
-  hr: { label: "Heart Rate", field: "field3", unit: "BPM", limit: 120 },
-  spo2: { label: "SpO2", field: "field4", unit: "%", limit: 90, type: "lowBad" },
-  temp: { label: "Temperature", field: "field5", unit: "°C", limit: 40 },
-  hum: { label: "Humidity", field: "field6", unit: "%", limit: 80 },
-  mpu: { label: "Impact Level (MPU)", field: "field7", unit: "g", limit: 2000 },
+const LIMITS = {
+  mq135:300, mq5:200, hr:120, spo2:90, temp:40, hum:80, mpu:2000
+};
+const NAMES = {
+  mq135:"Air Quality (MQ135)", mq5:"Gas MQ5", hr:"Heart Rate",
+  spo2:"SpO2", temp:"Temperature", hum:"Humidity", mpu:"Impact"
 };
 
-function scrollToSensors() {
-  document.getElementById("sensorSection").scrollIntoView({ behavior: "smooth" });
-}
-
 async function fetchData() {
+  const channel = document.getElementById("channel").value || "3138290";
+  const url = `https://api.thingspeak.com/channels/${channel}/feeds.json?results=1`;
+  document.getElementById("status").textContent = "Fetching...";
+
   try {
-    const res = await fetch(apiUrl);
-    const data = await res.json();
-    const feed = data.feeds[0];
+    const r = await fetch(url);
+    const j = await r.json();
+    const f = j.feeds[0];
 
-    let danger = false;
+    const sensors = {
+      mq135:parseFloat(f.field1),
+      mq5:parseFloat(f.field2),
+      hr:parseFloat(f.field3),
+      spo2:parseFloat(f.field4),
+      temp:parseFloat(f.field5),
+      hum:parseFloat(f.field6),
+      mpu:parseFloat(f.field7),
+    };
+
     let html = "";
-
-    for (const key in sensors) {
-      const s = sensors[key];
-      const value = Number(feed[s.field]);
-      const unsafe = s.type === "lowBad" ? value < s.limit : value > s.limit;
-
-      if (unsafe) danger = true;
+    for(let k in sensors) {
+      let v = sensors[k];
+      let level = v > LIMITS[k] ? "danger" : "safe";
+      let label = v > LIMITS[k] ? "HARMFUL" : "SAFE";
 
       html += `
-        <div class="card">
-          <strong>${s.label}</strong>
-          <br>
-          Value: ${isNaN(value) ? "--" : value + " " + s.unit}
-          <br>
-          Status: <b style="color:${unsafe ? "red" : "lightgreen"}">
-          ${isNaN(value) ? "No Data" : unsafe ? "UNSAFE" : "Safe"}</b>
-        </div>`;
+      <div class="card">
+        <h3>${NAMES[k]}</h3>
+        <p><b>${isNaN(v)? "--" : v}</b></p>
+        <p class="${level}">${label}</p>
+      </div>`;
     }
 
-    document.getElementById("sensorGrid").innerHTML = html;
-    document.getElementById("alertBox").innerHTML = danger ?
-      `<div class='danger'>⚠️ Dangerous Condition Detected!</div>` : "";
-  } catch (e) {
-    document.getElementById("alertBox").innerHTML = "<div class='danger'>Error Loading Data</div>";
+    document.getElementById("sensorData").innerHTML = html;
+    document.getElementById("status").textContent = "✔ Live data updated";
+  } catch(e) {
+    document.getElementById("status").textContent = "❌ Error fetching data";
   }
 }
 
 fetchData();
 setInterval(fetchData, 8000);
 </script>
+
 </body>
 </html>
