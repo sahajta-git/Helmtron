@@ -2,156 +2,188 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Helmtron Safety Helmet</title>
+<title>Helmtron — Smart Helmet Safety System</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <style>
+/* ---------- Global Design ---------- */
 body {
+  margin:0;
   font-family: Arial, sans-serif;
-  margin:0; padding:0;
-  background:#f8f9fa;
+  background:#0b1a2b;
+  color:white;
 }
-.navbar {
-  display:flex; justify-content:space-between;
-  background:#111; padding:14px; color:#fff;
+.navbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:15px 30px;
+  background:#06121f;
+  border-bottom:2px solid #f1c40f;
 }
-.navbar a {
-  color:white; text-decoration:none; margin:0 10px;
+.navbar a{
+  color:#f1c40f;
+  text-decoration:none;
+  margin:0 12px;
+  font-size:18px;
   font-weight:bold;
 }
-.hero {
-  background:#111; color:white;
-  padding:80px 20px; text-align:center;
+.navbar a:hover{
+  color:white;
 }
-.btn {
-  background:#ffc107; padding:10px 18px;
-  border:none; border-radius:5px;
-  font-weight:bold; cursor:pointer;
-}
-.section { padding:40px 20px; }
-.card-container {
-  display:grid;
-  grid-template-columns:repeat(auto-fit, minmax(220px,1fr));
-  gap:15px;
-}
-.card {
-  background:white; padding:20px;
-  border-radius:8px;
-  box-shadow:0 2px 8px rgba(0,0,0,0.1);
+
+/* ---------- Sections ---------- */
+section{ display:none; padding:40px; }
+#home{ display:block; text-align:center; }
+
+/* ---------- Cards ---------- */
+.card{
+  background:#132842;
+  border:2px solid #f1c40f;
+  border-radius:12px;
+  padding:20px;
+  margin:auto;
+  max-width:500px;
+  margin-bottom:25px;
   text-align:center;
+  box-shadow:0 4px 12px rgba(0,0,0,0.5);
 }
-.safe { color:green; font-weight:bold; }
-.danger { color:red; font-weight:bold; }
-.history-frame {
-  width:100%; height:350px; border:0;
-  margin-bottom:15px;
+
+/* ---------- Sensor Alerts ---------- */
+.safe{ color:#2ecc71; font-weight:bold; }
+.danger{ color:#ff4d4d; font-weight:bold; }
+
+/* ---------- Buttons ---------- */
+button{
+  background:#f1c40f;
+  border:none;
+  padding:12px 22px;
+  border-radius:8px;
+  cursor:pointer;
+  font-size:16px;
 }
+button:hover{ background:#ffd835; }
 </style>
+
+<script>
+// ------- Switch Pages -------
+function showPage(id){
+  document.querySelectorAll("section").forEach(sec=>sec.style.display="none");
+  document.getElementById(id).style.display="block";
+}
+
+// ------- ThingSpeak API Keys (CHANGE TO YOURS) -------
+const channels = {
+  mq135:"https://api.thingspeak.com/channels/3069778/fields/1/last.json",
+  vibration:"https://api.thingspeak.com/channels/3069778/fields/2/last.json",
+  tilt:"https://api.thingspeak.com/channels/3069778/fields/3/last.json",
+  temp:"https://api.thingspeak.com/channels/3069778/fields/4/last.json"
+};
+
+// ------- Fetch & Display Sensor Data -------
+async function fetchSensor(id,field,label,limit){
+  try{
+    let r = await fetch(channels[id]);
+    let d = await r.json();
+    let val = parseFloat(d.field1);
+    let status = "SAFE ✅";
+    let cls = "safe";
+
+    if(id=="mq135" && val>150){status="Air Danger ⚠"; cls="danger";}
+    if(id=="vibration" && val>20){status="Impact Detected ⚠"; cls="danger";}
+    if(id=="tilt" && val>30){status="Fall Detected ⚠"; cls="danger";}
+    if(id=="temp" && val>45){status="High Temp ⚠"; cls="danger";}
+
+    document.getElementById(field).innerHTML = `${label}: <b>${val}</b>`;
+    document.getElementById(limit).innerHTML = `<span class="${cls}">${status}</span>`;
+  }catch(e){
+    document.getElementById(field).innerHTML = `${label}: Error`;
+  }
+}
+function updateAll(){
+  fetchSensor("mq135","mq135_val","Air Quality","mq135_status");
+  fetchSensor("vibration","vib_val","Vibration","vib_status");
+  fetchSensor("tilt","tilt_val","Tilt","tilt_status");
+  fetchSensor("temp","temp_val","Temperature","temp_status");
+}
+setInterval(updateAll,5000);
+window.onload = updateAll;
+</script>
+
 </head>
 <body>
 
-<!-- Navbar -->
+<!-- ✅ NAVBAR -->
 <div class="navbar">
-  <div>HELMTRON</div>
+  <div style="font-size:22px;color:white;font-weight:bold;">HELMTRON</div>
   <div>
-    <a href="#home">Home</a>
-    <a href="#live">Live Data</a>
-    <a href="#history">Sensor History</a>
-    <a href="#about">About</a>
+    <a href="#" onclick="showPage('home')">Home</a>
+    <a href="#" onclick="showPage('dashboard')">Live Sensors</a>
+    <a href="#" onclick="showPage('history')">Sensor History</a>
+    <a href="#" onclick="showPage('about')">About</a>
   </div>
 </div>
 
-<!-- Hero -->
-<div class="hero" id="home">
-  <h1>Smart Safety Helmet</h1>
-  <p>Real-time monitoring for worker safety</p>
-  <button class="btn" onclick="document.getElementById('live').scrollIntoView()">View Live Data</button>
-</div>
+<!-- ✅ HOME -->
+<section id="home">
+  <h1>Welcome to Helmtron</h1>
+  <p>Smart Helmet safety system to detect accidents, air pollution and temperature danger.</p>
+  <button onclick="showPage('dashboard')">View Live Safety Status</button>
+</section>
 
-<!-- Live Sensors -->
-<div class="section" id="live">
-  <h2>Live Sensor Data</h2>
+<!-- ✅ LIVE SENSOR DASHBOARD -->
+<section id="dashboard">
+  <h2>Live Helmet Safety Monitoring</h2>
 
-  <input id="channel" placeholder="Enter ThingSpeak Channel ID" style="padding:8px" />
-  <button class="btn" onclick="fetchData()">Fetch</button>
+  <div class="card">
+    <h3>MQ-135 Air Quality Sensor</h3>
+    <p id="mq135_val">Loading...</p>
+    <p id="mq135_status"></p>
+  </div>
 
-  <div id="sensorData" class="card-container" style="margin-top:20px;"></div>
+  <div class="card">
+    <h3>Vibration / Impact Sensor</h3>
+    <p id="vib_val">Loading...</p>
+    <p id="vib_status"></p>
+  </div>
 
-  <p id="status"></p>
-</div>
+  <div class="card">
+    <h3>Tilt / Fall Sensor</h3>
+    <p id="tilt_val">Loading...</p>
+    <p id="tilt_status"></p>
+  </div>
 
-<!-- Sensor History -->
-<div class="section" id="history">
+  <div class="card">
+    <h3>Temperature Sensor</h3>
+    <p id="temp_val">Loading...</p>
+    <p id="temp_status"></p>
+  </div>
+</section>
+
+<!-- ✅ SENSOR HISTORY -->
+<section id="history" style="text-align:center;">
   <h2>Sensor History</h2>
+  <p>Historical records will be displayed here.</p>
+  <iframe width="100%" height="350"
+    src="https://thingspeak.com/channels/3069778/charts/1"></iframe>
+  <br><br>
+  <button onclick="showPage('dashboard')">Back to Live Sensors</button>
+</section>
 
-  <!-- Replace channel number in URLs below -->
-  <iframe class="history-frame" src="https://thingspeak.com/channels/3138290/charts/1?bgcolor=%23fff&color=%23000&dynamic=true&results=60&title=MQ135&type=line"></iframe>
-  <iframe class="history-frame" src="https://thingspeak.com/channels/3138290/charts/2?bgcolor=%23fff&color=%23000&dynamic=true&results=60&title=MQ5&type=line"></iframe>
-  <iframe class="history-frame" src="https://thingspeak.com/channels/3138290/charts/3?bgcolor=%23fff&color=%23000&dynamic=true&results=60&title=Heart Rate&type=line"></iframe>
-  <iframe class="history-frame" src="https://thingspeak.com/channels/3138290/charts/4?bgcolor=%23fff&color=%23000&dynamic=true&results=60&title=SpO2&type=line"></iframe>
-  <iframe class="history-frame" src="https://thingspeak.com/channels/3138290/charts/5?bgcolor=%23fff&color=%23000&dynamic=true&results=60&title=Temperature&type=line"></iframe>
-  <iframe class="history-frame" src="https://thingspeak.com/channels/3138290/charts/6?bgcolor=%23fff&color=%23000&dynamic=true&results=60&title=Humidity&type=line"></iframe>
-  <iframe class="history-frame" src="https://thingspeak.com/channels/3138290/charts/7?bgcolor=%23fff&color=%23000&dynamic=true&results=60&title=Impact&type=line"></iframe>
-</div>
-
-<!-- About -->
-<div class="section" id="about">
+<!-- ✅ ABOUT -->
+<section id="about">
   <h2>About Helmtron</h2>
-  <p>Helmet equipped with MQ135, MQ5, MAX30102, DHT11, MPU6050 for worker protection.</p>
-</div>
-
-<script>
-const LIMITS = {
-  mq135:300, mq5:200, hr:120, spo2:90, temp:40, hum:80, mpu:2000
-};
-const NAMES = {
-  mq135:"Air Quality (MQ135)", mq5:"Gas MQ5", hr:"Heart Rate",
-  spo2:"SpO2", temp:"Temperature", hum:"Humidity", mpu:"Impact"
-};
-
-async function fetchData() {
-  const channel = document.getElementById("channel").value || "3138290";
-  const url = `https://api.thingspeak.com/channels/${channel}/feeds.json?results=1`;
-  document.getElementById("status").textContent = "Fetching...";
-
-  try {
-    const r = await fetch(url);
-    const j = await r.json();
-    const f = j.feeds[0];
-
-    const sensors = {
-      mq135:parseFloat(f.field1),
-      mq5:parseFloat(f.field2),
-      hr:parseFloat(f.field3),
-      spo2:parseFloat(f.field4),
-      temp:parseFloat(f.field5),
-      hum:parseFloat(f.field6),
-      mpu:parseFloat(f.field7),
-    };
-
-    let html = "";
-    for(let k in sensors) {
-      let v = sensors[k];
-      let level = v > LIMITS[k] ? "danger" : "safe";
-      let label = v > LIMITS[k] ? "HARMFUL" : "SAFE";
-
-      html += `
-      <div class="card">
-        <h3>${NAMES[k]}</h3>
-        <p><b>${isNaN(v)? "--" : v}</b></p>
-        <p class="${level}">${label}</p>
-      </div>`;
-    }
-
-    document.getElementById("sensorData").innerHTML = html;
-    document.getElementById("status").textContent = "✔ Live data updated";
-  } catch(e) {
-    document.getElementById("status").textContent = "❌ Error fetching data";
-  }
-}
-
-fetchData();
-setInterval(fetchData, 8000);
-</script>
+  <p>
+    Helmtron is a smart IoT helmet that monitors rider safety and environment.
+    It detects:
+  </p>
+  <ul>
+    <li>Accident / Impact</li>
+    <li>Fall / Tilt</li>
+    <li>Air Pollution</li>
+    <li>High Temperature</li>
+  </ul>
+</section>
 
 </body>
 </html>
