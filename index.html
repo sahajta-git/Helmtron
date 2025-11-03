@@ -1,21 +1,7 @@
-// ✅ Helmtron React (Vite/CRA compatible) — Full single-file component (TypeScript)
-// Save this as: src/pages/Index.tsx  (for Next.js) OR src/App.tsx (for Vite/CRA)
-//
-// Instructions:
-// • If you use Vite/CRA: create a file src/App.tsx and paste this component as the default export.
-// • If you use Next.js (App Router), save as app/page.tsx and adjust imports (remove Browser-only APIs if SSR). Use `useEffect` for fetch.
-// • Create a .env file with VITE_THINGSPEAK_CHANNEL=3138290 (Vite) or REACT_APP_THINGSPEAK_CHANNEL (CRA). See below.
-//
-// Environment variables (example):
-// Vite:  VITE_THINGSPEAK_CHANNEL=3138290
-// CRA:   REACT_APP_THINGSPEAK_CHANNEL=3138290
-// Next:  process.env.NEXT_PUBLIC_THINGSPEAK_CHANNEL=3138290
-//
-// Public hero image: place hero-helmet.jpg in the public/ folder and the component will load it.
-
 import React, { useEffect, useState } from "react";
 
-type SensorData = {
+// ✅ Sensor data type
+interface SensorData {
   mq135: number | null;
   mq5: number | null;
   hr: number | null;
@@ -23,16 +9,13 @@ type SensorData = {
   temp: number | null;
   hum: number | null;
   mpu: number | null;
-};
+}
 
-const DEFAULT_CHANNEL = Number(
-  (import.meta && (import.meta as any).env && (import.meta as any).env.VITE_THINGSPEAK_CHANNEL) ||
-    (process.env && (process.env as any).REACT_APP_THINGSPEAK_CHANNEL) ||
-    (process.env && (process.env as any).NEXT_PUBLIC_THINGSPEAK_CHANNEL) ||
-    3138290
-);
+// ✅ ThingSpeak Channel
+const CHANNEL_ID = 3138290;
+const POLL_INTERVAL = 7000;
 
-const FIELD_MAP: Record<keyof SensorData, string> = {
+const FIELD_MAP = {
   mq135: "field1",
   mq5: "field2",
   hr: "field3",
@@ -42,192 +25,88 @@ const FIELD_MAP: Record<keyof SensorData, string> = {
   mpu: "field7",
 };
 
-const LABELS: Record<keyof SensorData, { label: string; unit: string; limit: number }> = {
+const LABELS: Record<string, { label: string; unit: string; limit: number }> = {
   mq135: { label: "Air Quality (MQ135)", unit: "PPM", limit: 300 },
-  mq5: { label: "Gas Level (MQ5)", unit: "PPM", limit: 200 },
+  mq5: { label: "Gas (MQ5)", unit: "PPM", limit: 200 },
   hr: { label: "Heart Rate", unit: "BPM", limit: 120 },
   spo2: { label: "SpO2", unit: "%", limit: 90 },
   temp: { label: "Temperature", unit: "°C", limit: 40 },
   hum: { label: "Humidity", unit: "%", limit: 80 },
-  mpu: { label: "Impact Level (MPU)", unit: "g", limit: 2000 },
+  mpu: { label: "Impact (MPU)", unit: "g", limit: 2000 },
 };
 
-const POLL_INTERVAL = 8000;
-
-export default function App(): JSX.Element {
+export default function App() {
   const [data, setData] = useState<SensorData | null>(null);
-  const [channelId, setChannelId] = useState<number>(DEFAULT_CHANNEL);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-  const [dangerList, setDangerList] = useState<string[]>([]);
+  const [alert, setAlert] = useState<string>("");
 
-  const apiUrl = `https://api.thingspeak.com/channels/${channelId}/feeds.json?results=1`;
-
-  async function fetchOnce() {
+  const fetchData = async () => {
     try {
-      setLoading(true);
-      setError(null);
-      const resp = await fetch(apiUrl, { cache: "no-store" });
-      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-      const json = await resp.json();
-      const feed = json && json.feeds && json.feeds[0] ? json.feeds[0] : null;
-      if (!feed) throw new Error("No feed data received");
+      const res = await fetch(`https://api.thingspeak.com/channels/${CHANNEL_ID}/feeds.json?results=1`);
+      const json = await res.json();
+      const feed = json.feeds[0];
 
-      const parsed: SensorData = {
-        mq135: parseNumber(feed[FIELD_MAP.mq135]),
-        mq5: parseNumber(feed[FIELD_MAP.mq5]),
-        hr: parseNumber(feed[FIELD_MAP.hr]),
-        spo2: parseNumber(feed[FIELD_MAP.spo2]),
-        temp: parseNumber(feed[FIELD_MAP.temp]),
-        hum: parseNumber(feed[FIELD_MAP.hum]),
-        mpu: parseNumber(feed[FIELD_MAP.mpu]),
-      };
+      const parsed: any = {};
+      Object.keys(FIELD_MAP).forEach((key) => {
+        const field = FIELD_MAP[key as keyof typeof FIELD_MAP];
+        parsed[key] = feed[field] ? Number(feed[field]) : null;
+      });
 
       setData(parsed);
 
-      // build danger list
-      const dangers: string[] = [];
-      (Object.keys(parsed) as (keyof SensorData)[]).forEach((k) => {
-        const v = parsed[k];
-        if (v !== null && !Number.isNaN(v)) {
-          if (v > LABELS[k].limit) dangers.push(`${LABELS[k].label} (${v}${LABELS[k].unit})`);
-        }
-      });
-      setDangerList(dangers);
-      setLoading(false);
-    } catch (err: any) {
-      console.error(err);
-      setError(err.message || "Failed to fetch");
-      setLoading(false);
+      const bad = Object.keys(parsed).filter((k) => parsed[k] !== null && parsed[k] > LABELS[k].limit);
+      setAlert(bad.length ? `⚠️ Danger Detected: ${bad.map((b) => LABELS[b].label).join(", ")}` : "✅ Safe Environment");
+    } catch {
+      setAlert("❌ Error fetching data");
     }
-  }
+  };
 
   useEffect(() => {
-    fetchOnce();
-    const id = setInterval(fetchOnce, POLL_INTERVAL);
-    return () => clearInterval(id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [channelId]);
-
-  function parseNumber(v: any): number | null {
-    if (v === null || v === undefined) return null;
-    const n = Number(v);
-    return Number.isNaN(n) ? null : n;
-  }
+    fetchData();
+    const interval = setInterval(fetchData, POLL_INTERVAL);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
-    <div style={{ fontFamily: "Inter, system-ui, sans-serif", minHeight: "100vh", background: "linear-gradient(135deg,#08111d,#12263e)", color: "#f1c40f" }}>
-      {/* Navbar */}
-      <nav style={{ position: "sticky", top: 0, width: "100%", background: "rgba(11,26,43,0.9)", padding: "12px 20px", borderBottom: "2px solid #f1c40f", zIndex: 50 }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <div style={{ color: "#f44336", fontWeight: 800, fontSize: 20 }}>Helmtron</div>
-          <div style={{ display: "flex", gap: 16 }}>{["Home", "About", "Features", "Sensors", "Contact"].map((s) => (<a key={s} href={`#${s.toLowerCase()}`} style={{ color: "#f1c40f", textDecoration: "none" }}>{s}</a>))}</div>
-        </div>
-      </nav>
-
-      {/* Hero */}
-      <header id="home" style={{ padding: "80px 20px", textAlign: "center", backgroundImage: "linear-gradient(rgba(0,0,0,0.55),rgba(0,0,0,0.65)), url('/hero-helmet.jpg')", backgroundSize: "cover", backgroundPosition: "center" }}>
-        <h1 style={{ fontSize: 40, color: "#fff", margin: 0, textShadow: "0 0 20px #f1c40f" }}>Smart Safety Helmet</h1>
-        <p style={{ color: "#fff", maxWidth: 800, margin: "12px auto 0" }}>Helmtron monitors air quality, gas levels, vital signs and impacts — alerting wearers and supervisors in real time.</p>
-        <div style={{ marginTop: 18 }}>
-          <button onClick={() => document.getElementById("sensor")?.scrollIntoView({ behavior: "smooth" })} style={{ background: "#f1c40f", border: 0, padding: "10px 18px", borderRadius: 8, fontWeight: 700, cursor: "pointer" }}>View Live Data</button>
-        </div>
+    <div style={{ background: "#0b1a2b", color: "#f1c40f", minHeight: "100vh", fontFamily: "Arial", paddingBottom: 40 }}>
+      <header style={{ textAlign: "center", padding: 20, borderBottom: "3px solid #f1c40f" }}>
+        <h1 style={{ fontSize: "2.5rem", margin: 0 }}>Helmtron</h1>
+        <p>Smart IoT Safety Helmet</p>
       </header>
 
-      {/* About */}
-      <section id="about" style={{ padding: "48px 20px", background: "#112233", color: "#ddd", borderTop: "2px solid #f1c40f" }}>
-        <div style={{ maxWidth: 900, margin: "0 auto", textAlign: "center" }}>
-          <h2 style={{ color: "#f1c40f" }}>About Helmtron</h2>
-          <p>Helmtron is an IoT safety helmet with multiple sensors — MQ135, MQ5, MAX30102, DHT11, and MPU. The website below fetches live values from ThingSpeak and shows which sensors are in a harmful range.</p>
-        </div>
-      </section>
+      <div style={{ textAlign: "center", padding: "20px", fontSize: "1.2rem", background: "#1b2f4b", margin: 20, borderRadius: 10 }}>
+        {alert}
+      </div>
 
-      {/* Features */}
-      <section id="features" style={{ padding: "40px 20px" }}>
-        <div style={{ maxWidth: 1000, margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 16 }}>
-          {Object.keys(LABELS).map((k) => (<div key={k} style={{ background: "#1b2f4b", border: "2px solid #f1c40f", padding: 16, borderRadius: 12, color: "#fff" }}><h4 style={{ margin: 0 }}>{LABELS[k as keyof typeof LABELS].label}</h4><p style={{ marginTop: 8, color: "#ddd" }}>Limit: {LABELS[k as keyof typeof LABELS].limit}{LABELS[k as keyof typeof LABELS].unit}</p></div>))}
-        </div>
-      </section>
-
-      {/* Sensor Readouts */}
-      <section id="sensor" style={{ padding: "40px 20px", borderTop: "2px solid #f1c40f" }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-          <h2 style={{ color: "#f1c40f" }}>Live Sensor Readings</h2>
-
-          {/* Channel control */}
-          <div style={{ marginTop: 12, display: "flex", gap: 8, alignItems: "center" }}>
-            <label style={{ color: "#ddd" }}>ThingSpeak Channel ID:</label>
-            <input type="number" value={channelId} onChange={(e) => setChannelId(Number(e.target.value))} style={{ padding: 6, borderRadius: 6, border: "1px solid #ccc" }} />
-            <button onClick={() => fetchOnce()} style={{ marginLeft: 8, padding: "8px 12px", borderRadius: 6, background: "#f1c40f", border: 0, cursor: "pointer" }}>Refresh</button>
-          </div>
-
-          {/* Alert banner */}
-          {dangerList.length > 0 && (
-            <div style={{ marginTop: 16, background: "#ff0033", color: "#fff", padding: 12, borderRadius: 8, fontWeight: 700 }}>
-              ⚠️ Dangerous sensor(s): {dangerList.join(" — ")}
-            </div>
-          )}
-
-          {/* error / loading */}
-          {error && <div style={{ marginTop: 12, color: "#ffcccc" }}>Error: {error}</div>}
-          {loading && <div style={{ marginTop: 12, color: "#ddd" }}>Loading latest values…</div>}
-
-          {/* cards */}
-          <div style={{ marginTop: 18, display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: 12 }}>
-            {(data ? Object.keys(data) : Object.keys(FIELD_MAP)).map((k) => {
-              const key = k as keyof SensorData;
-              const val = data ? data[key] : null;
-              const info = LABELS[key];
-              const isDanger = val !== null && !Number.isNaN(val) && val > info.limit;
-              return (
-                <div key={key} style={{ background: "#1b2f4b", padding: 12, borderRadius: 10, border: "1px solid #f1c40f", textAlign: "center" }}>
-                  <div style={{ color: "#f1c40f", fontWeight: 700 }}>{info.label}</div>
-                  <div style={{ fontSize: 20, marginTop: 8, color: isDanger ? "#ff8080" : "#2ecc71", fontWeight: 800 }}>
-                    {val === null || val === undefined ? "--" : String(val) + info.unit}
-                  </div>
-                  <div style={{ marginTop: 8, color: "#ddd" }}>{val === null ? "No data" : val > info.limit ? "HARMFUL" : "SAFE"}</div>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* charts area: one iframe per field */}
-          <div style={{ marginTop: 24, display: "grid", gap: 12 }}>
-            {Object.keys(FIELD_MAP).map((f, idx) => (
-              <div key={f} style={{ background: "#0b1a2b", border: "2px solid #f1c40f", borderRadius: 10, overflow: "hidden" }}>
-                <div style={{ padding: 10, color: "#f1c40f", fontWeight: 700 }}>{LABELS[Object.keys(FIELD_MAP)[idx] as keyof typeof LABELS].label} - Chart</div>
-                <iframe
-                  title={`chart-${idx}`}
-                  src={`https://thingspeak.com/channels/${channelId}/charts/${idx + 1}?bgcolor=%230b1a2b&color=%23f1c40f&dynamic=true`}
-                  style={{ width: "100%", height: 260, border: 0 }}
-                />
+      <div style={{ width: "90%", margin: "auto", maxWidth: 700 }}>
+        {data &&
+          Object.keys(data).map((k) => {
+            const v = data[k as keyof SensorData];
+            const info = LABELS[k];
+            const danger = v !== null && v > info.limit;
+            return (
+              <div
+                key={k}
+                style={{
+                  background: "#1b2f4b",
+                  border: `2px solid ${danger ? "red" : "#f1c40f"}`,
+                  padding: 15,
+                  borderRadius: 10,
+                  marginBottom: 15,
+                }}
+              >
+                <h3>{info.label}</h3>
+                <strong style={{ color: danger ? "red" : "#f1c40f" }}>
+                  {v !== null ? `${v} ${info.unit}` : "--"}
+                </strong>
+                <p>{danger ? "⚠️ Harmful" : "✅ Safe"}</p>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
+            );
+          })}
+      </div>
 
-      {/* Contact */}
-      <section id="contact" style={{ padding: "40px 20px", background: "#112233", color: "#ddd" }}>
-        <div style={{ maxWidth: 700, margin: "0 auto" }}>
-          <h2 style={{ color: "#f1c40f" }}>Contact</h2>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              alert("Thanks — message received!");
-              (e.target as HTMLFormElement).reset();
-            }}
-            style={{ display: "grid", gap: 8, marginTop: 12 }}
-          >
-            <input name="name" placeholder="Your name" required style={{ padding: 8, borderRadius: 6 }} />
-            <input name="email" type="email" placeholder="Email" required style={{ padding: 8, borderRadius: 6 }} />
-            <textarea name="message" rows={4} placeholder="Message" required style={{ padding: 8, borderRadius: 6 }} />
-            <button style={{ background: "#f1c40f", border: 0, padding: "10px 16px", borderRadius: 6, fontWeight: 700 }}>Send</button>
-          </form>
-        </div>
-      </section>
-
-      <footer style={{ padding: 20, textAlign: "center", borderTop: "2px solid #f1c40f", color: "#f1c40f" }}>© 2025 Helmtron — NIIT University</footer>
+      <footer style={{ textAlign: "center", padding: 20, borderTop: "2px solid #f1c40f" }}>
+        Made by Team Helmtron | NIIT University
+      </footer>
     </div>
   );
 }
