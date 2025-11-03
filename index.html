@@ -9,14 +9,14 @@
   body {
     margin: 0;
     font-family: Poppins, sans-serif;
-    background: #0a192f;
+    background: linear-gradient(135deg, #0a192f, #09131f);
     color: #fff;
   }
 
   /* Navbar */
   nav {
     background: rgba(0,0,0,0.4);
-    backdrop-filter: blur(8px);
+    backdrop-filter: blur(10px);
     padding: 12px 25px;
     display: flex;
     justify-content: space-between;
@@ -32,9 +32,7 @@
     transition: 0.3s;
   }
 
-  nav a:hover {
-    color: white;
-  }
+  nav a:hover { color: white; }
 
   .logo {
     font-size: 1.6rem;
@@ -46,7 +44,6 @@
   .hero {
     text-align: center;
     padding: 80px 20px;
-    background: linear-gradient(135deg, #0b2447, #091015);
   }
 
   .hero h1 {
@@ -99,7 +96,6 @@
     border-top: 1px solid #f1c40f;
     color: #f1c40f;
   }
-
 </style>
 </head>
 <body>
@@ -118,7 +114,7 @@
 <!-- Hero -->
 <section class="hero">
   <h1>Welcome to Helmtron</h1>
-  <p>Smart IoT-Powered Safety Helmet for Industrial Safety & Accident Prevention</p>
+  <p>Smart IoT-Powered Safety Helmet for Industrial Accident Prevention</p>
 </section>
 
 <!-- Live Dashboard -->
@@ -127,28 +123,27 @@
 
   <div class="card">
     <h2>MQ-135 Air Quality / Gas</h2>
-    <iframe src="https://thingspeak.com/channels/3069778/charts/1?bgcolor=%110b1a2b&color=%23f1c40f&dynamic=true"></iframe>
+    <iframe src="https://thingspeak.com/channels/3069778/charts/1?bgcolor=%230a192f&color=%23f1c40f&dynamic=true"></iframe>
   </div>
 
   <div class="card">
     <h2>MPU6050 Impact / Fall Detection</h2>
-    <iframe src="https://thingspeak.com/channels/3069778/charts/2?bgcolor=%110b1a2b&color=%23f1c40f&dynamic=true"></iframe>
+    <iframe src="https://thingspeak.com/channels/3069778/charts/2?bgcolor=%230a192f&color=%23f1c40f&dynamic=true"></iframe>
   </div>
 
   <div class="card">
-    <h2>DHT11 Temperature</h2>
-    <iframe src="https://thingspeak.com/channels/3069778/charts/3?bgcolor=%110b1a2b&color=%23f1c40f&dynamic=true"></iframe>
+    <h2>Temperature (DHT11)</h2>
+    <iframe src="https://thingspeak.com/channels/3069778/charts/3?bgcolor=%230a192f&color=%23f1c40f&dynamic=true"></iframe>
   </div>
 
   <div class="card">
-    <h2>DHT11 Humidity</h2>
-    <iframe src="https://thingspeak.com/channels/3069778/charts/4?bgcolor=%110b1a2b&color=%23f1c40f&dynamic=true"></iframe>
+    <h2>Humidity (DHT11)</h2>
+    <iframe src="https://thingspeak.com/channels/3069778/charts/4?bgcolor=%230a192f&color=%23f1c40f&dynamic=true"></iframe>
   </div>
-
 </div>
 
 <footer>
-  © 2025 Helmtron | Smart Helmet by NIIT University Students
+  © 2025 Helmtron | Smart Helmet by NIIT University
 </footer>
 
 </body>
