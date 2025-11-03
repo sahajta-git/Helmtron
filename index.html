@@ -1,112 +1,178 @@
-import React, { useEffect, useState } from "react";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Helmtron - Smart Helmet Dashboard</title>
 
-// ✅ Sensor data type
-interface SensorData {
-  mq135: number | null;
-  mq5: number | null;
-  hr: number | null;
-  spo2: number | null;
-  temp: number | null;
-  hum: number | null;
-  mpu: number | null;
-}
-
-// ✅ ThingSpeak Channel
-const CHANNEL_ID = 3138290;
-const POLL_INTERVAL = 7000;
-
-const FIELD_MAP = {
-  mq135: "field1",
-  mq5: "field2",
-  hr: "field3",
-  spo2: "field4",
-  temp: "field5",
-  hum: "field6",
-  mpu: "field7",
-};
-
-const LABELS: Record<string, { label: string; unit: string; limit: number }> = {
-  mq135: { label: "Air Quality (MQ135)", unit: "PPM", limit: 300 },
-  mq5: { label: "Gas (MQ5)", unit: "PPM", limit: 200 },
-  hr: { label: "Heart Rate", unit: "BPM", limit: 120 },
-  spo2: { label: "SpO2", unit: "%", limit: 90 },
-  temp: { label: "Temperature", unit: "°C", limit: 40 },
-  hum: { label: "Humidity", unit: "%", limit: 80 },
-  mpu: { label: "Impact (MPU)", unit: "g", limit: 2000 },
-};
-
-export default function App() {
-  const [data, setData] = useState<SensorData | null>(null);
-  const [alert, setAlert] = useState<string>("");
-
-  const fetchData = async () => {
-    try {
-      const res = await fetch(`https://api.thingspeak.com/channels/${CHANNEL_ID}/feeds.json?results=1`);
-      const json = await res.json();
-      const feed = json.feeds[0];
-
-      const parsed: any = {};
-      Object.keys(FIELD_MAP).forEach((key) => {
-        const field = FIELD_MAP[key as keyof typeof FIELD_MAP];
-        parsed[key] = feed[field] ? Number(feed[field]) : null;
-      });
-
-      setData(parsed);
-
-      const bad = Object.keys(parsed).filter((k) => parsed[k] !== null && parsed[k] > LABELS[k].limit);
-      setAlert(bad.length ? `⚠️ Danger Detected: ${bad.map((b) => LABELS[b].label).join(", ")}` : "✅ Safe Environment");
-    } catch {
-      setAlert("❌ Error fetching data");
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #0b1a2b;
+      color: #f1c40f;
     }
-  };
 
-  useEffect(() => {
-    fetchData();
-    const interval = setInterval(fetchData, POLL_INTERVAL);
-    return () => clearInterval(interval);
-  }, []);
+    header {
+      padding: 15px;
+      background: #0b1a2b;
+      border-bottom: 3px solid #f1c40f;
+      text-align: center;
+      font-size: 28px;
+      font-weight: bold;
+    }
 
-  return (
-    <div style={{ background: "#0b1a2b", color: "#f1c40f", minHeight: "100vh", fontFamily: "Arial", paddingBottom: 40 }}>
-      <header style={{ textAlign: "center", padding: 20, borderBottom: "3px solid #f1c40f" }}>
-        <h1 style={{ fontSize: "2.5rem", margin: 0 }}>Helmtron</h1>
-        <p>Smart IoT Safety Helmet</p>
-      </header>
+    .hero {
+      background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.7)),
+        url("https://i.postimg.cc/Pf4v5Fkt/helmet-bg.jpg");
+      height: 300px;
+      background-size: cover;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      color: white;
+    }
 
-      <div style={{ textAlign: "center", padding: "20px", fontSize: "1.2rem", background: "#1b2f4b", margin: 20, borderRadius: 10 }}>
-        {alert}
-      </div>
+    .hero h2 {
+      font-size: 35px;
+      margin: 0;
+      font-weight: bold;
+    }
 
-      <div style={{ width: "90%", margin: "auto", maxWidth: 700 }}>
-        {data &&
-          Object.keys(data).map((k) => {
-            const v = data[k as keyof SensorData];
-            const info = LABELS[k];
-            const danger = v !== null && v > info.limit;
-            return (
-              <div
-                key={k}
-                style={{
-                  background: "#1b2f4b",
-                  border: `2px solid ${danger ? "red" : "#f1c40f"}`,
-                  padding: 15,
-                  borderRadius: 10,
-                  marginBottom: 15,
-                }}
-              >
-                <h3>{info.label}</h3>
-                <strong style={{ color: danger ? "red" : "#f1c40f" }}>
-                  {v !== null ? `${v} ${info.unit}` : "--"}
-                </strong>
-                <p>{danger ? "⚠️ Harmful" : "✅ Safe"}</p>
-              </div>
-            );
-          })}
-      </div>
+    .hero button {
+      margin-top: 12px;
+      background: #f1c40f;
+      border: none;
+      padding: 10px 18px;
+      font-size: 18px;
+      cursor: pointer;
+      border-radius: 6px;
+      font-weight: bold;
+    }
 
-      <footer style={{ textAlign: "center", padding: 20, borderTop: "2px solid #f1c40f" }}>
-        Made by Team Helmtron | NIIT University
-      </footer>
-    </div>
-  );
+    .section {
+      padding: 25px;
+      text-align: center;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 20px;
+      padding: 20px;
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    .card {
+      background: #1b2f4b;
+      border: 2px solid #f1c40f;
+      border-radius: 12px;
+      padding: 20px;
+      font-size: 18px;
+    }
+
+    .danger {
+      background: red;
+      color: white;
+      font-weight: bold;
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 15px;
+      animation: blink 1s infinite;
+    }
+
+    @keyframes blink {
+      50% { opacity: 0.5; }
+    }
+
+    footer {
+      background: #0b1a2b;
+      border-top: 2px solid #f1c40f;
+      text-align: center;
+      padding: 15px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+
+<body>
+<header>Helmtron - Smart Safety Helmet</header>
+
+<div class="hero">
+  <h2>Live Safety Monitoring</h2>
+  <p>Gas | Heart Rate | Temperature | Impact Alerts</p>
+  <button onclick="scrollToSensors()">View Live Data</button>
+</div>
+
+<div class="section" id="sensorSection">
+  <h2>Live Sensor Data</h2>
+  <div id="alertBox"></div>
+
+  <div class="grid" id="sensorGrid">
+    <!-- Cards load via JS -->
+  </div>
+</div>
+
+<footer>© 2025 Helmtron | NIIT University | Smart Safety System</footer>
+
+<script>
+const channelId = 3138290; // ✅ Your channel
+const apiUrl = `https://api.thingspeak.com/channels/${channelId}/feeds.json?results=1`;
+
+const sensors = {
+  mq135: { label: "MQ135 Air Quality", field: "field1", unit: "PPM", limit: 300 },
+  mq5: { label: "MQ5 Gas Level", field: "field2", unit: "PPM", limit: 200 },
+  hr: { label: "Heart Rate", field: "field3", unit: "BPM", limit: 120 },
+  spo2: { label: "SpO2", field: "field4", unit: "%", limit: 90, type: "lowBad" },
+  temp: { label: "Temperature", field: "field5", unit: "°C", limit: 40 },
+  hum: { label: "Humidity", field: "field6", unit: "%", limit: 80 },
+  mpu: { label: "Impact Level (MPU)", field: "field7", unit: "g", limit: 2000 },
+};
+
+function scrollToSensors() {
+  document.getElementById("sensorSection").scrollIntoView({ behavior: "smooth" });
 }
+
+async function fetchData() {
+  try {
+    const res = await fetch(apiUrl);
+    const data = await res.json();
+    const feed = data.feeds[0];
+
+    let danger = false;
+    let html = "";
+
+    for (const key in sensors) {
+      const s = sensors[key];
+      const value = Number(feed[s.field]);
+      const unsafe = s.type === "lowBad" ? value < s.limit : value > s.limit;
+
+      if (unsafe) danger = true;
+
+      html += `
+        <div class="card">
+          <strong>${s.label}</strong>
+          <br>
+          Value: ${isNaN(value) ? "--" : value + " " + s.unit}
+          <br>
+          Status: <b style="color:${unsafe ? "red" : "lightgreen"}">
+          ${isNaN(value) ? "No Data" : unsafe ? "UNSAFE" : "Safe"}</b>
+        </div>`;
+    }
+
+    document.getElementById("sensorGrid").innerHTML = html;
+    document.getElementById("alertBox").innerHTML = danger ?
+      `<div class='danger'>⚠️ Dangerous Condition Detected!</div>` : "";
+  } catch (e) {
+    document.getElementById("alertBox").innerHTML = "<div class='danger'>Error Loading Data</div>";
+  }
+}
+
+fetchData();
+setInterval(fetchData, 8000);
+</script>
+</body>
+</html>
